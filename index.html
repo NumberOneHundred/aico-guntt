@@ -91,7 +91,7 @@ th{color:#aab5c4;background:#101722;position:sticky;top:0}
 .formgrid .full{grid-column:1/-1}
 textarea.field{min-height:90px;resize:vertical}
 .modalactions{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
-.present .edit-only,.present .toolbar,.present .tasksub .priority,.present .tasksub .owner{display:none!important}
+.present .edit-only,.present .tasksub .priority,.present .tasksub .owner{display:none!important}
 .present .taskrow{min-height:52px}.present .track{min-height:52px}.present .bar{top:13px}
 
 .login-screen{
@@ -109,8 +109,6 @@ textarea.field{min-height:90px;resize:vertical}
 .userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .user-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#151e2b;border:1px solid var(--line);font-size:12px;color:#dbe4ef}
 .role-chip{font-size:10px;padding:3px 6px;border-radius:999px;background:rgba(166,255,95,.12);color:var(--accent);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
-.live-dot{width:8px;height:8px;border-radius:50%;background:#6b7280;box-shadow:0 0 0 3px rgba(107,114,128,.12)}
-.live-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(114,224,166,.12)}
 .access-list{display:grid;gap:8px;margin-top:14px}
 .access-row{display:grid;grid-template-columns:1fr 150px auto;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:13px;background:#0e151f}
 .access-mail{font-weight:760;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -120,9 +118,47 @@ textarea.field{min-height:90px;resize:vertical}
 .viewer .edit-only,.viewer #addBtn,.viewer #accessBtn{display:none!important}
 .viewer .task-edit{display:none!important}
 .viewer .task-open{pointer-events:none}
-.sync-pill{display:inline-flex;align-items:center;gap:7px;color:#aeb9c8;font-size:11px}
 @media(max-width:720px){
   .access-row{grid-template-columns:1fr auto}.access-row select{grid-column:1}.access-add{grid-template-columns:1fr}.access-add button{width:100%}
+}
+
+
+.scale-control{display:flex;align-items:center;gap:4px;padding:3px;background:#0d131c;border:1px solid var(--line);border-radius:12px}
+.scale-control>span{font-size:11px;color:var(--muted);font-weight:800;padding:0 6px 0 5px}
+.scale-btn{border:0;background:transparent;color:#9ea9ba;padding:7px 9px;border-radius:8px;font-size:12px;font-weight:800}
+.scale-btn.active{background:#263246;color:#fff}
+.scale-btn:hover{color:#fff}
+.view-title{display:flex;justify-content:space-between;gap:14px;align-items:end;margin:22px 2px 10px}
+.view-title h2{margin:2px 0 0;font-size:20px;letter-spacing:-.02em}
+.view-title>span{color:var(--muted);font-size:12px;text-align:right;max-width:520px}
+.view-kicker{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--accent);font-weight:900}
+.portfolio-section{margin-top:28px}
+.portfolio-board{border:1px solid var(--line);border-radius:18px;background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+.portfolio-scroll{overflow-x:auto;overflow-y:hidden}
+.portfolio-canvas{position:relative;min-width:760px}
+.portfolio-axis{position:relative;height:48px;border-bottom:1px solid var(--line);background:#101722}
+.portfolio-axis .p-month{position:absolute;top:7px;font-size:11px;font-weight:850;color:#cbd4e1;text-transform:capitalize;white-space:nowrap}
+.portfolio-axis .p-week{position:absolute;top:27px;font-size:9px;color:#758195;border-left:1px solid rgba(255,255,255,.06);padding-left:4px;height:18px;white-space:nowrap}
+.portfolio-lanes{position:relative;padding:10px 0 12px;background-image:linear-gradient(to right,rgba(255,255,255,.03) 1px,transparent 1px)}
+.portfolio-lane{position:relative;height:42px}
+.portfolio-bar{position:absolute;top:7px;height:28px;border:1px solid rgba(255,255,255,.15);border-radius:999px;color:#fff;padding:0 12px;display:flex;align-items:center;gap:8px;overflow:hidden;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.18);min-width:22px}
+.portfolio-bar strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portfolio-bar small{font-size:9px;opacity:.8;white-space:nowrap}
+.portfolio-bar:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.portfolio-progress{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.16);pointer-events:none}
+.portfolio-bar>*{position:relative;z-index:1}
+.portfolio-today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:4;pointer-events:none}
+.portfolio-today:before{content:"сегодня";position:absolute;top:3px;left:5px;font-size:9px;color:var(--accent);font-weight:900}
+.portfolio-tooltip{position:fixed;z-index:400;display:none;width:min(320px,calc(100vw - 24px));background:#0d141f;border:1px solid #37445a;border-radius:13px;padding:11px 12px;box-shadow:0 14px 45px rgba(0,0,0,.4);pointer-events:none}
+.portfolio-tooltip.show{display:block}
+.portfolio-tooltip b{display:block;margin-bottom:5px}
+.portfolio-tooltip div{font-size:12px;color:#b6c0cf;line-height:1.45}
+.portfolio-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.portfolio-key{display:flex;align-items:center;gap:6px;font-size:11px;color:#aab5c4}
+.portfolio-key i{width:9px;height:9px;border-radius:50%}
+@media(max-width:720px){
+  .view-title{align-items:flex-start;flex-direction:column}.view-title>span{text-align:left}
+  .scale-control{width:100%;justify-content:space-between}.scale-control>span{display:none}.scale-btn{flex:1}
 }
 
 .toast{position:fixed;right:18px;bottom:18px;background:#182231;border:1px solid #37465d;padding:10px 14px;border-radius:12px;color:#e7edf5;opacity:0;transform:translateY(8px);transition:.2s;z-index:200}
@@ -154,8 +190,6 @@ textarea.field{min-height:90px;resize:vertical}
 .flow-card .state{display:inline-block;margin-top:10px;padding:5px 8px;border-radius:999px;background:#202a38;font-size:11px;font-weight:800}
 .arrow{display:flex;align-items:center;justify-content:center;color:#617087;font-size:24px;font-weight:900}
 .parallel{margin-top:12px;color:#c5cfdd;font-size:13px;padding:10px 12px;border-radius:12px;background:#101925;border:1px dashed #35425a}
-.share-note{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:rgba(114,167,255,.07);border:1px solid rgba(114,167,255,.24);border-radius:14px;padding:12px 14px;margin-bottom:12px;color:#cdd8e8;font-size:13px}
-.share-note b{color:#fff}
 @media(max-width:850px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);height:28px}}
 
 @media(max-width:900px){
@@ -190,7 +224,6 @@ textarea.field{min-height:90px;resize:vertical}
     </div>
     <div class="actions">
       <div class="userbar" id="userBar" hidden>
-        <span class="sync-pill"><i class="live-dot" id="liveDot"></i><span id="liveText">подключение…</span></span>
         <span class="user-chip"><span id="currentEmail"></span><span class="role-chip" id="currentRole"></span></span>
         <button class="btn" id="accessBtn" hidden>Доступы</button>
         <button class="btn ghost" id="logoutBtn">Выйти</button>
@@ -227,12 +260,6 @@ textarea.field{min-height:90px;resize:vertical}
     </div>
     <div class="parallel"><strong>Логика запуска:</strong> лонгриды идут первыми; кейсы запускаем следом и ведём некоторое время параллельно с лонгридами; тесты — после кейсов. Конкретные даты кейсов и тестов не зашиты, пока их не подтвердили.</div>
   </div>
-
-  <div class="share-note">
-    <span>↗</span>
-    <div><b>Как показывать руководителю:</b> эта версия уже подключена к общей Firebase Realtime Database. Вы меняете задачу — остальные пользователи по той же Vercel-ссылке видят обновление автоматически.</div>
-  </div>
-
 <div class="stats">
     <div class="stat"><strong id="statAll">0</strong><span>задач в плане</span></div>
     <div class="stat"><strong id="statDone">0</strong><span>завершено</span></div>
@@ -243,20 +270,34 @@ textarea.field{min-height:90px;resize:vertical}
 
   <div class="notice" id="riskNotice"></div>
 
-  <div class="toolbar edit-only">
+  <div class="toolbar">
     <input class="field search grow" id="search" placeholder="Найти задачу или проект">
     <select class="field" id="projectFilter"><option value="">Все проекты</option></select>
     <select class="field" id="statusFilter"><option value="">Все статусы</option><option>Завершено</option><option>В работе</option><option>Не начат</option><option>Пауза</option></select>
-    <select class="field" id="zoom"><option value="16" selected>Шкала: недели</option><option value="22">Шкала: компактные дни</option><option value="30">Шкала: подробные дни</option></select>
+    <div class="scale-control" aria-label="Масштаб календаря">
+      <span>Календарь</span>
+      <button type="button" class="scale-btn active" data-zoom="16">Недели</button>
+      <button type="button" class="scale-btn" data-zoom="22">Дни</button>
+      <button type="button" class="scale-btn" data-zoom="30">Подробно</button>
+      <select id="zoom" hidden>
+        <option value="16" selected>Недели</option>
+        <option value="22">Дни</option>
+        <option value="30">Подробно</option>
+      </select>
+    </div>
     <button class="btn" id="todayBtn">Эта неделя</button>
     <button class="btn" id="tableBtn">Таблица</button>
-    <button class="btn" id="importBtn">Импорт</button>
-    <button class="btn" id="exportBtn">Экспорт CSV</button>
-    <button class="btn" id="backupBtn">Backup JSON</button>
-    <button class="btn ghost danger" id="resetBtn">Сбросить</button>
-    <input id="fileInput" type="file" accept=".csv,.json" hidden>
+    
+    
+    
+    
+    
   </div>
 
+  <div class="view-title">
+    <div><span class="view-kicker">Подробный вид</span><h2>Задачи и этапы</h2></div>
+    <span>Каждая строка — отдельный этап работы</span>
+  </div>
   <div class="board">
     <div class="gantt-scroll" id="scroll">
       <div class="gantt" id="gantt">
@@ -274,8 +315,25 @@ textarea.field{min-height:90px;resize:vertical}
     <span><i style="background:#2c5693"></i>В работе</span>
     <span><i style="background:#5a4d2d"></i>Не начат</span>
     <span><i style="background:#7b3340"></i>Просрочено</span>
-    <span class="filters-note">По умолчанию шкала сгруппирована по неделям. Если нужны точные даты — переключите на компактные или подробные дни.</span>
+    <span class="filters-note">Масштаб календаря можно менять выше: недели, дни или подробный режим.</span>
   </div>
+
+  <section class="portfolio-section">
+    <div class="view-title">
+      <div><span class="view-kicker">Общий вид</span><h2>Проекты на одной шкале</h2></div>
+      <span>Наведите на полосу — увидите сроки, статус и прогресс. Нажмите — отфильтруется подробный Гант.</span>
+    </div>
+    <div class="portfolio-board">
+      <div class="portfolio-scroll" id="portfolioScroll">
+        <div class="portfolio-canvas" id="portfolioCanvas">
+          <div class="portfolio-axis" id="portfolioAxis"></div>
+          <div class="portfolio-lanes" id="portfolioLanes"></div>
+        </div>
+      </div>
+    </div>
+    <div class="portfolio-legend" id="portfolioLegend"></div>
+  </section>
+
 </div>
 
 
@@ -329,6 +387,7 @@ textarea.field{min-height:90px;resize:vertical}
   </form>
 </div>
 
+<div class="portfolio-tooltip" id="portfolioTooltip" role="tooltip"></div>
 <div class="toast" id="toast"></div>
 <script id="seed-data" type="application/json">[{"id": "t1", "project": "Лонгриды", "task_name": "Разметка лонгридов", "start_date": "2026-07-26", "end_date": "2026-08-10", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Основной пул завершён."}, {"id": "t2", "project": "Диалоги", "task_name": "Разметка диалогов — пул 1 (26 диалогов)", "start_date": "2026-08-18", "end_date": "2026-08-25", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "26", "done": "26", "team": "", "comment": "Первый пул диалогов."}, {"id": "t3", "project": "Кейсы", "task_name": "Разметка кейсов по критериям 1–16", "start_date": "2026-08-27", "end_date": "2026-09-11", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Разметка кейсов завершена."}, {"id": "t4", "project": "Диалоги", "task_name": "Разметка диалогов — пул 2 (26 диалогов)", "start_date": "2026-09-09", "end_date": "2026-09-11", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "26", "done": "26", "team": "", "comment": "Второй пул диалогов."}, {"id": "t5", "project": "Шаги кейсов", "task_name": "Запуск пула", "start_date": "2026-09-14", "end_date": "2026-09-14", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "", "team": "5", "comment": "Пул запущен."}, {"id": "t6", "project": "Шаги кейсов", "task_name": "Основная разметка (2 пула × 120 = 240 заданий)", "start_date": "2026-09-14", "end_date": "2026-09-18", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "240", "team": "5", "comment": "Основной объём с учётом перекрытия."}, {"id": "t7", "project": "Шаги кейсов", "task_name": "Проверка расхождений", "start_date": "2026-09-18", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Ревью шло параллельно с разметкой."}, {"id": "t8", "project": "Шаги кейсов", "task_name": "Закрытие основного пула", "start_date": "2026-09-18", "end_date": "2026-09-18", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "240", "team": "", "comment": "Основной пул закрыт."}, {"id": "t9", "project": "Шаги кейсов", "task_name": "Доработка после ревью", "start_date": "2026-09-18", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Только спорные случаи и доразметка."}, {"id": "t10", "project": "Шаги кейсов", "task_name": "Передача результата", "start_date": "2026-09-21", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Финальная выгрузка после закрытия расхождений."}, {"id": "t11", "project": "Тесты", "task_name": "Подготовка и запуск", "start_date": "2026-09-25", "end_date": "2026-09-25", "status": "Не начат", "progress": 0, "assignee": "Команда разметки", "priority": "Средний", "volume": "190", "done": "0", "team": "", "comment": "5 пулов по 38 заданий."}, {"id": "prod_longreads_92", "project": "Прод · Лонгриды", "task_name": "Текущий пул — 92 лонгрида", "start_date": "2026-09-25", "end_date": "2026-09-30", "status": "В работе", "progress": 0, "assignee": "Команда разметки", "priority": "Высокий", "volume": "92", "done": "", "team": "", "comment": "Старт в пятницу, дедлайн в среду. Готово пока не указано — внесите фактическое число."}]</script>
 
@@ -463,11 +522,6 @@ const db = getDatabase(firebaseApp);
       $("accessBtn").hidden=!isAdmin();
       app.classList.toggle("viewer",!canEdit());
     });
-    onValue(ref(db,".info/connected"),snap=>{
-      const online=!!snap.val();
-      $("liveDot").classList.toggle("on",online);
-      $("liveText").textContent=online?"Firebase live":"офлайн";
-    });
   }
 
   function filtered(){
@@ -582,7 +636,111 @@ const db = getDatabase(firebaseApp);
       }
     }
     $("rows").innerHTML=out||'<div style="padding:30px;color:var(--muted)">По фильтрам ничего не найдено.</div>';
-    updateStats(); renderTable(list); bindRows();
+    updateStats(); renderTable(list); bindRows(); renderPortfolio(list);
+  }
+
+
+  const PROJECT_COLORS=["#4978d0","#2f8f75","#9a6bc2","#bd7442","#477f99","#8b6f45","#6a7ec2","#9a586e","#537c5d","#735da3"];
+  function projectColor(name){
+    let h=0; for(const ch of String(name)) h=(h*31+ch.charCodeAt(0))>>>0;
+    return PROJECT_COLORS[h%PROJECT_COLORS.length];
+  }
+  function aggregateProjects(list){
+    const map={};
+    list.forEach(t=>{
+      const p=map[t.project]??(map[t.project]={project:t.project,tasks:[],start:t.start_date,end:t.end_date,volume:0,done:0});
+      p.tasks.push(t);
+      if(t.start_date<p.start)p.start=t.start_date;
+      if(t.end_date>p.end)p.end=t.end_date;
+      const v=Number(String(t.volume||"").replace(",","."))||0;
+      const d=Number(String(t.done||"").replace(",","."))||0;
+      p.volume+=v; p.done+=d;
+    });
+    return Object.values(map).map(p=>{
+      const allDone=p.tasks.every(t=>t.status==="Завершено");
+      const anyWork=p.tasks.some(t=>t.status==="В работе");
+      const anyOver=p.tasks.some(overdue);
+      p.status=allDone?"Завершено":anyOver?"Есть просрочка":anyWork?"В работе":"Не начат";
+      if(p.volume>0) p.progress=Math.max(0,Math.min(100,Math.round(p.done/p.volume*100)));
+      else p.progress=Math.round(p.tasks.reduce((s,t)=>s+(Number(t.progress)||0),0)/p.tasks.length);
+      return p;
+    }).sort((a,b)=>a.start.localeCompare(b.start));
+  }
+  function renderPortfolio(list){
+    const projects=aggregateProjects(list);
+    const canvas=$("portfolioCanvas"),axis=$("portfolioAxis"),lanes=$("portfolioLanes"),legend=$("portfolioLegend");
+    if(!projects.length){
+      axis.innerHTML=""; lanes.innerHTML='<div style="padding:24px;color:var(--muted)">Нет проектов по текущим фильтрам.</div>'; legend.innerHTML=""; return;
+    }
+    const [start,end]=range(list);
+    const dayW=10;
+    const totalDays=diff(iso(start),iso(end))+1;
+    const width=Math.max(760,totalDays*dayW);
+    canvas.style.width=width+"px";
+    lanes.style.backgroundSize=dayW+"px 100%";
+
+    let axisHtml="",prevMonth=-1;
+    for(let i=0;i<totalDays;i++){
+      const d=addDays(start,i),m=d.getUTCMonth(),dow=d.getUTCDay();
+      if(m!==prevMonth){
+        axisHtml+=`<span class="p-month" style="left:${i*dayW+6}px">${esc(new Intl.DateTimeFormat("ru-RU",{month:"long",year:"numeric"}).format(d))}</span>`;
+        prevMonth=m;
+      }
+      if(dow===1){
+        axisHtml+=`<span class="p-week" style="left:${i*dayW}px">${d.getUTCDate()}</span>`;
+      }
+    }
+    axis.innerHTML=axisHtml;
+
+    let laneHtml="";
+    projects.forEach((p,idx)=>{
+      const left=diff(iso(start),p.start)*dayW;
+      const len=diff(p.start,p.end)+1;
+      const barW=Math.max(22,len*dayW-3);
+      const color=projectColor(p.project);
+      laneHtml+=`<div class="portfolio-lane">
+        <button type="button" class="portfolio-bar" data-project="${esc(p.project)}"
+          style="left:${left+1}px;width:${barW}px;background:${color}"
+          aria-label="${esc(p.project)}: ${fmtDate(p.start)} — ${fmtDate(p.end)}, ${p.progress}%">
+          <span class="portfolio-progress" style="width:${p.progress}%"></span>
+          <strong>${esc(p.project)}</strong>
+          ${barW>150?`<small>${p.progress}%</small>`:""}
+        </button>
+      </div>`;
+    });
+    const tpos=diff(iso(start),iso(todayUTC()))*dayW+dayW/2;
+    if(tpos>=0&&tpos<=width) laneHtml+=`<i class="portfolio-today" style="left:${tpos}px"></i>`;
+    lanes.innerHTML=laneHtml;
+    legend.innerHTML=projects.map(p=>`<span class="portfolio-key"><i style="background:${projectColor(p.project)}"></i>${esc(p.project)}</span>`).join("");
+
+    document.querySelectorAll(".portfolio-bar").forEach(bar=>{
+      const p=projects.find(x=>x.project===bar.dataset.project);
+      const show=(e)=>{
+        const tip=$("portfolioTooltip");
+        const vol=p.volume?`${p.done} / ${p.volume}`:"объём не указан";
+        tip.innerHTML=`<b>${esc(p.project)}</b><div>${fmtDate(p.start)} → ${fmtDate(p.end)}</div><div>${esc(p.status)} · прогресс ${p.progress}% · ${p.tasks.length} этап(ов)</div><div>${vol}</div>`;
+        tip.classList.add("show");
+        moveTip(e);
+      };
+      const hide=()=>$("portfolioTooltip").classList.remove("show");
+      const moveTip=(e)=>{
+        const tip=$("portfolioTooltip");
+        const x=Math.min(window.innerWidth-tip.offsetWidth-12,(e.clientX||bar.getBoundingClientRect().left)+12);
+        const y=Math.min(window.innerHeight-tip.offsetHeight-12,(e.clientY||bar.getBoundingClientRect().bottom)+12);
+        tip.style.left=Math.max(12,x)+"px"; tip.style.top=Math.max(12,y)+"px";
+      };
+      bar.addEventListener("mouseenter",show);
+      bar.addEventListener("mousemove",moveTip);
+      bar.addEventListener("mouseleave",hide);
+      bar.addEventListener("focus",show);
+      bar.addEventListener("blur",hide);
+      bar.addEventListener("click",()=>{
+        $("projectFilter").value=p.project;
+        render();
+        $("scroll").scrollTo({left:0,behavior:"smooth"});
+        document.querySelector(".view-title")?.scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    });
   }
 
   function updateStats(){
@@ -659,7 +817,15 @@ const db = getDatabase(firebaseApp);
   $("modalBack").addEventListener("click",e=>{if(e.target===$("modalBack"))closeModal()});
   $("addBtn").addEventListener("click",()=>openTask(null));
 
-  ["search","projectFilter","statusFilter","zoom"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+  ["search","projectFilter","statusFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+
+  document.querySelectorAll(".scale-btn").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".scale-btn").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    $("zoom").value=btn.dataset.zoom;
+    render();
+  }));
+
   $("todayBtn").addEventListener("click",()=>{
     const list=filtered(),[start]=range(list),dayW=Number($("zoom").value||16);
     const x=diff(iso(start),iso(todayUTC()))*dayW-Math.max(180,$("scroll").clientWidth*.42);
@@ -715,9 +881,6 @@ const db = getDatabase(firebaseApp);
 
   $("logoutBtn").addEventListener("click",logout);
   $("loginForm").addEventListener("submit",e=>{ e.preventDefault(); login($("loginEmail").value); });
-
-  // Remove local-only controls that no longer make sense in the shared Firebase version.
-  ["importBtn","exportBtn","backupBtn","resetBtn","fileInput"].forEach(id=>{ const el=$(id); if(el) el.remove(); });
 
   const remembered=localStorage.getItem(SESSION_KEY);
   if(remembered){
