@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-CO · Gantt Control Center</title>
+<style>
+:root{
+  --bg:#0a0d12;--panel:#111722;--panel2:#151d2a;--text:#f4f7fb;--muted:#95a0b3;--line:#283345;
+  --accent:#a6ff5f;--blue:#72a7ff;--cyan:#6de4d8;--amber:#ffc768;--red:#ff6b7a;--violet:#b693ff;
+  --green:#72e0a6;--shadow:0 18px 50px rgba(0,0,0,.28);
+  --labelw:330px;--dayw:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(114,167,255,.12),transparent 27%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1600px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+.brand small{display:block;color:var(--accent);font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.brand h1{margin:4px 0 4px;font-size:clamp(28px,4vw,48px);letter-spacing:-.04em}
+.brand p{margin:0;color:var(--muted);max-width:760px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 13px;border-radius:12px;font-weight:750}
+.btn:hover{border-color:#45536b}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#10150f}
+.btn.ghost{background:transparent}
+.btn.danger{color:#ff9aa5}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+.stat{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));border:1px solid var(--line);border-radius:18px;padding:16px}
+.stat strong{display:block;font-size:30px;letter-spacing:-.04em}
+.stat span{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+.stat.risk strong{color:var(--red)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+.toolbar .grow{flex:1}
+.field{background:#0d131c;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 10px;min-height:40px}
+.search{min-width:260px}
+.notice{display:none;border:1px solid rgba(255,107,122,.35);background:rgba(255,107,122,.08);color:#ffd4d8;padding:10px 13px;border-radius:12px;margin:0 0 12px}
+.notice.show{display:block}
+.board{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+.gantt-scroll{overflow:auto;max-height:70vh}
+.gantt{min-width:1100px}
+.headrow,.taskrow,.grouprow{display:grid;grid-template-columns:var(--labelw) 1fr}
+.headrow{position:sticky;top:0;z-index:12;background:#101722;border-bottom:1px solid var(--line)}
+.headlabel{padding:11px 14px;font-weight:800;border-right:1px solid var(--line);position:sticky;left:0;z-index:14;background:#101722}
+.timeline-head{position:relative;height:58px;overflow:hidden}
+.months,.days{position:absolute;left:0;right:0}
+.months{top:0;height:27px;border-bottom:1px solid var(--line)}
+.days{top:27px;height:31px}
+.month-label{position:absolute;top:5px;font-size:11px;color:#cbd4e1;font-weight:800;text-transform:capitalize}
+.day-label{position:absolute;top:6px;width:var(--dayw);text-align:center;font-size:10px;color:#778398}
+.day-label.weekend{color:#b28f7b}
+.grouprow{background:#0e141e;border-bottom:1px solid var(--line)}
+.groupname{padding:8px 14px;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#aeb9c9;border-right:1px solid var(--line);position:sticky;left:0;z-index:8;background:#0e141e}
+.grouptrack{height:35px}
+.taskrow{border-bottom:1px solid rgba(40,51,69,.78);min-height:58px}
+.taskrow:last-child{border-bottom:0}
+.taskmeta{padding:8px 12px;border-right:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;position:sticky;left:0;z-index:7;background:#111722}
+.taskmeta button{background:transparent;border:0;color:inherit;text-align:left;padding:0;min-width:0}
+.tasktitle{font-weight:760;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tasksub{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 7px;border-radius:999px;background:#202a38;color:#cdd6e2}
+.statusdot{width:7px;height:7px;border-radius:50%}
+.track{position:relative;min-height:58px;background-image:linear-gradient(to right,rgba(255,255,255,.035) 1px,transparent 1px);background-size:var(--dayw) 100%}
+.weekend-band{position:absolute;top:0;bottom:0;background:rgba(255,199,104,.025)}
+.todayline{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:5;pointer-events:none}
+.todayline:before{content:"сегодня";position:absolute;top:2px;left:5px;color:var(--accent);font-size:10px;font-weight:900}
+.bar{position:absolute;top:16px;height:26px;border-radius:8px;min-width:8px;display:flex;align-items:center;overflow:hidden;border:1px solid rgba(255,255,255,.12);cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.18)}
+.bar .prog{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.16)}
+.bar span{position:relative;z-index:2;padding:0 8px;font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.done{background:#285f47}
+.bar.work{background:#2c5693}
+.bar.notstarted{background:#5a4d2d}
+.bar.pause{background:#5b436f}
+.bar.overdue{background:#7b3340}
+.bar.milestone{width:16px!important;height:16px;top:21px;transform:rotate(45deg);border-radius:3px}
+.bar.milestone span{display:none}
+.filters-note{color:var(--muted);font-size:12px}
+.tablewrap{display:none;padding:0;overflow:auto}
+.tablewrap.show{display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:#aab5c4;background:#101722;position:sticky;top:0}
+.modalback{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:flex-start;justify-content:center;padding:36px 16px;z-index:100}
+.modalback.open{display:flex}
+.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#111925;border:1px solid #35435a;border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.modal h2{margin:0 0 16px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formgrid label{font-size:12px;color:#a8b3c2;display:grid;gap:6px}
+.formgrid .full{grid-column:1/-1}
+textarea.field{min-height:90px;resize:vertical}
+.modalactions{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+.present .edit-only,.present .toolbar,.present .tasksub .priority,.present .tasksub .owner{display:none!important}
+.present .taskrow{min-height:52px}.present .track{min-height:52px}.present .bar{top:13px}
+
+.login-screen{
+  position:fixed;inset:0;z-index:500;background:
+  radial-gradient(circle at 20% 0%,rgba(114,167,255,.18),transparent 30%),#090c11;
+  display:flex;align-items:center;justify-content:center;padding:20px
+}
+.login-card{width:min(460px,100%);background:#111722;border:1px solid #2f3b4e;border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.38)}
+.login-card .mark{width:42px;height:42px;border-radius:13px;background:var(--accent);color:#10150f;display:grid;place-items:center;font-weight:950;margin-bottom:18px}
+.login-card h2{font-size:30px;margin:0 0 8px;letter-spacing:-.04em}
+.login-card p{color:var(--muted);line-height:1.5;margin:0 0 18px}
+.login-card form{display:grid;gap:10px}
+.login-card input{width:100%}
+.login-error{min-height:20px;color:#ff9aa5;font-size:13px}
+.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.user-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#151e2b;border:1px solid var(--line);font-size:12px;color:#dbe4ef}
+.role-chip{font-size:10px;padding:3px 6px;border-radius:999px;background:rgba(166,255,95,.12);color:var(--accent);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#6b7280;box-shadow:0 0 0 3px rgba(107,114,128,.12)}
+.live-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(114,224,166,.12)}
+.access-list{display:grid;gap:8px;margin-top:14px}
+.access-row{display:grid;grid-template-columns:1fr 150px auto;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:13px;background:#0e151f}
+.access-mail{font-weight:760;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.access-name{font-size:12px;color:var(--muted);margin-top:2px}
+.access-add{display:grid;grid-template-columns:1.2fr .8fr 150px auto;gap:8px;margin-top:10px}
+.muted-mini{font-size:12px;color:var(--muted);line-height:1.45}
+.viewer .edit-only,.viewer #addBtn,.viewer #accessBtn{display:none!important}
+.viewer .task-edit{display:none!important}
+.viewer .task-open{pointer-events:none}
+.sync-pill{display:inline-flex;align-items:center;gap:7px;color:#aeb9c8;font-size:11px}
+@media(max-width:720px){
+  .access-row{grid-template-columns:1fr auto}.access-row select{grid-column:1}.access-add{grid-template-columns:1fr}.access-add button{width:100%}
+}
+
+.toast{position:fixed;right:18px;bottom:18px;background:#182231;border:1px solid #37465d;padding:10px 14px;border-radius:12px;color:#e7edf5;opacity:0;transform:translateY(8px);transition:.2s;z-index:200}
+.toast.show{opacity:1;transform:translateY(0)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 2px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+
+
+.week-label{position:absolute;top:5px;height:24px;border-left:1px solid rgba(255,255,255,.07);padding:0 6px;font-size:10px;color:#8e9bad;display:flex;align-items:center;white-space:nowrap;overflow:hidden}
+.week-label.current{color:var(--accent);font-weight:900}
+.month-sep{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.12);z-index:2;pointer-events:none}
+.track.compact{min-height:46px}
+.taskrow.compact{min-height:46px}
+.taskrow.compact .taskmeta{padding-top:6px;padding-bottom:6px}
+.taskrow.compact .bar{top:10px;height:24px}
+.taskrow.compact .bar.milestone{top:15px}
+.track.compact .bar span{font-size:10px;padding:0 6px}
+
+.roadmap{margin:18px 0;border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:18px}
+.roadmap-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.roadmap-head h2{margin:0;font-size:22px}
+.roadmap-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.flow{display:grid;grid-template-columns:1fr 54px 1fr 54px 1fr;gap:8px;align-items:stretch}
+.flow-card{border:1px solid var(--line);background:#0e151f;border-radius:16px;padding:16px;min-width:0}
+.flow-card.active{border-color:rgba(166,255,95,.45);background:rgba(166,255,95,.045)}
+.flow-card .num{font-size:26px;font-weight:900;letter-spacing:-.04em}
+.flow-card .title{font-weight:850;margin:5px 0}
+.flow-card .meta{color:var(--muted);font-size:12px;line-height:1.45}
+.flow-card .state{display:inline-block;margin-top:10px;padding:5px 8px;border-radius:999px;background:#202a38;font-size:11px;font-weight:800}
+.arrow{display:flex;align-items:center;justify-content:center;color:#617087;font-size:24px;font-weight:900}
+.parallel{margin-top:12px;color:#c5cfdd;font-size:13px;padding:10px 12px;border-radius:12px;background:#101925;border:1px dashed #35425a}
+.share-note{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:rgba(114,167,255,.07);border:1px solid rgba(114,167,255,.24);border-radius:14px;padding:12px 14px;margin-bottom:12px;color:#cdd8e8;font-size:13px}
+.share-note b{color:#fff}
+@media(max-width:850px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);height:28px}}
+
+@media(max-width:900px){
+  :root{--labelw:270px;--dayw:26px}.top{flex-direction:column}.actions{justify-content:flex-start}.stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .app{padding:12px}.stats{grid-template-columns:1fr 1fr}.search{min-width:100%;width:100%}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="mark">G</div>
+    <h2>AI-CO Gantt</h2>
+    <p>Введите корпоративную почту. Если она есть в списке доступа, откроется рабочий Гант.</p>
+    <form id="loginForm">
+      <input class="field" type="email" id="loginEmail" placeholder="name@yandex-team.ru" autocomplete="email" required>
+      <button class="btn primary" type="submit">Войти</button>
+      <div class="login-error" id="loginError" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
+  <div class="top">
+    <div class="brand">
+      <small>AI-CO · Annotation Operations</small>
+      <h1>Gantt Control Center</h1>
+      <p>Рабочий Гант команды разметки: сроки, статусы, риски и прогресс. Задачи и доступы хранятся в общей Firebase Realtime Database и обновляются у всех пользователей в реальном времени.</p>
+    </div>
+    <div class="actions">
+      <div class="userbar" id="userBar" hidden>
+        <span class="sync-pill"><i class="live-dot" id="liveDot"></i><span id="liveText">подключение…</span></span>
+        <span class="user-chip"><span id="currentEmail"></span><span class="role-chip" id="currentRole"></span></span>
+        <button class="btn" id="accessBtn" hidden>Доступы</button>
+        <button class="btn ghost" id="logoutBtn">Выйти</button>
+      </div>
+      <button class="btn" id="presentBtn">Презентационный режим</button>
+      <button class="btn primary edit-only" id="addBtn">+ Добавить задачу</button>
+    </div>
+  </div>
+
+  
+  <div class="roadmap">
+    <div class="roadmap-head">
+      <div><h2>Прод: ближайший контур</h2><p>Оценочные объёмы нужны для планирования ресурса; фактические пулы ведём ниже в Ганте.</p></div>
+      <span class="badge">план обновлён 29.09</span>
+    </div>
+    <div class="flow">
+      <div class="flow-card active">
+        <div class="num">92</div><div class="title">Лонгриды · текущий пул</div>
+        <div class="meta">25.09 → 30.09 · команда уже размечает<br>Оценочный полный объём прода: 660 лонгридов.</div>
+        <span class="state">В работе</span>
+      </div>
+      <div class="arrow">↔</div>
+      <div class="flow-card">
+        <div class="num">≈140</div><div class="title">Кейсы</div>
+        <div class="meta">Оценочный объём прода: 140 кейсов и около 700 шагов.<br>Запуск — следом за лонгридами, с рабочим нахлёстом.</div>
+        <span class="state">Даты TBD</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-card">
+        <div class="num">≈11,6k</div><div class="title">Тестовые айтемы</div>
+        <div class="meta">Оценочный полный объём генераций. Для ручной разметки в расчётах заложена выборка: 67 тестов в неделю × 4 айтема.</div>
+        <span class="state">После кейсов</span>
+      </div>
+    </div>
+    <div class="parallel"><strong>Логика запуска:</strong> лонгриды идут первыми; кейсы запускаем следом и ведём некоторое время параллельно с лонгридами; тесты — после кейсов. Конкретные даты кейсов и тестов не зашиты, пока их не подтвердили.</div>
+  </div>
+
+  <div class="share-note">
+    <span>↗</span>
+    <div><b>Как показывать руководителю:</b> эта версия уже подключена к общей Firebase Realtime Database. Вы меняете задачу — остальные пользователи по той же Vercel-ссылке видят обновление автоматически.</div>
+  </div>
+
+<div class="stats">
+    <div class="stat"><strong id="statAll">0</strong><span>задач в плане</span></div>
+    <div class="stat"><strong id="statDone">0</strong><span>завершено</span></div>
+    <div class="stat"><strong id="statWork">0</strong><span>в работе</span></div>
+    <div class="stat risk"><strong id="statRisk">0</strong><span>просрочено</span></div>
+    <div class="stat"><strong id="statVolume">—</strong><span>явный объём заданий</span></div>
+  </div>
+
+  <div class="notice" id="riskNotice"></div>
+
+  <div class="toolbar edit-only">
+    <input class="field search grow" id="search" placeholder="Найти задачу или проект">
+    <select class="field" id="projectFilter"><option value="">Все проекты</option></select>
+    <select class="field" id="statusFilter"><option value="">Все статусы</option><option>Завершено</option><option>В работе</option><option>Не начат</option><option>Пауза</option></select>
+    <select class="field" id="zoom"><option value="16" selected>Шкала: недели</option><option value="22">Шкала: компактные дни</option><option value="30">Шкала: подробные дни</option></select>
+    <button class="btn" id="todayBtn">Эта неделя</button>
+    <button class="btn" id="tableBtn">Таблица</button>
+    <button class="btn" id="importBtn">Импорт</button>
+    <button class="btn" id="exportBtn">Экспорт CSV</button>
+    <button class="btn" id="backupBtn">Backup JSON</button>
+    <button class="btn ghost danger" id="resetBtn">Сбросить</button>
+    <input id="fileInput" type="file" accept=".csv,.json" hidden>
+  </div>
+
+  <div class="board">
+    <div class="gantt-scroll" id="scroll">
+      <div class="gantt" id="gantt">
+        <div class="headrow">
+          <div class="headlabel">Этап / задача</div>
+          <div class="timeline-head"><div class="months" id="months"></div><div class="days" id="days"></div></div>
+        </div>
+        <div id="rows"></div>
+      </div>
+    </div>
+    <div class="tablewrap" id="tableWrap"></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#285f47"></i>Завершено</span>
+    <span><i style="background:#2c5693"></i>В работе</span>
+    <span><i style="background:#5a4d2d"></i>Не начат</span>
+    <span><i style="background:#7b3340"></i>Просрочено</span>
+    <span class="filters-note">По умолчанию шкала сгруппирована по неделям. Если нужны точные даты — переключите на компактные или подробные дни.</span>
+  </div>
+</div>
+
+
+<div class="modalback" id="accessModalBack" role="dialog" aria-modal="true" aria-labelledby="accessModalTitle">
+  <div class="modal">
+    <h2 id="accessModalTitle">Доступ к Ганту</h2>
+    <p class="muted-mini">Администратор управляет задачами и доступами. Редактор может менять задачи. Наблюдатель — только смотреть.</p>
+    <div class="access-add">
+      <input class="field" id="newUserEmail" type="email" placeholder="name@yandex-team.ru">
+      <input class="field" id="newUserName" placeholder="Имя — необязательно">
+      <select class="field" id="newUserRole">
+        <option value="viewer">Наблюдатель</option>
+        <option value="editor">Редактор</option>
+        <option value="admin">Администратор</option>
+      </select>
+      <button class="btn primary" type="button" id="addUserBtn">Добавить</button>
+    </div>
+    <div class="access-list" id="accessList"></div>
+    <div class="modalactions">
+      <span class="muted-mini">Первичный администратор <strong>admin@yandex-team.ru</strong> защищён от удаления.</span>
+      <button type="button" class="btn" id="closeAccessBtn">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalback" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <form class="modal" id="taskForm">
+    <h2 id="modalTitle">Задача</h2>
+    <input type="hidden" id="fId">
+    <div class="formgrid">
+      <label>Проект<input class="field" id="fProject" required></label>
+      <label>Статус<select class="field" id="fStatus"><option>Не начат</option><option>В работе</option><option>Завершено</option><option>Пауза</option></select></label>
+      <label class="full">Название<input class="field" id="fName" required></label>
+      <label>Старт<input class="field" type="date" id="fStart" required></label>
+      <label>Финиш<input class="field" type="date" id="fEnd" required></label>
+      <label>Прогресс, %<input class="field" type="number" min="0" max="100" id="fProgress"></label>
+      <label>Приоритет<select class="field" id="fPriority"><option>Низкий</option><option selected>Средний</option><option>Высокий</option><option>Критический</option></select></label>
+      <label>Объём<input class="field" id="fVolume" placeholder="например, 190"></label>
+      <label>Готово<input class="field" id="fDone" placeholder="например, 80"></label>
+      <label>Команда<input class="field" id="fTeam" placeholder="например, 5"></label>
+      <label>Ответственный<input class="field" id="fAssignee" value="Команда разметки"></label>
+      <label class="full">Комментарий<textarea class="field" id="fComment"></textarea></label>
+    </div>
+    <div class="modalactions">
+      <button type="button" class="btn danger" id="deleteBtn">Удалить</button>
+      <div>
+        <button type="button" class="btn" id="cancelBtn">Отмена</button>
+        <button type="submit" class="btn primary">Сохранить</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+<script id="seed-data" type="application/json">[{"id": "t1", "project": "Лонгриды", "task_name": "Разметка лонгридов", "start_date": "2026-07-26", "end_date": "2026-08-10", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Основной пул завершён."}, {"id": "t2", "project": "Диалоги", "task_name": "Разметка диалогов — пул 1 (26 диалогов)", "start_date": "2026-08-18", "end_date": "2026-08-25", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "26", "done": "26", "team": "", "comment": "Первый пул диалогов."}, {"id": "t3", "project": "Кейсы", "task_name": "Разметка кейсов по критериям 1–16", "start_date": "2026-08-27", "end_date": "2026-09-11", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Разметка кейсов завершена."}, {"id": "t4", "project": "Диалоги", "task_name": "Разметка диалогов — пул 2 (26 диалогов)", "start_date": "2026-09-09", "end_date": "2026-09-11", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "26", "done": "26", "team": "", "comment": "Второй пул диалогов."}, {"id": "t5", "project": "Шаги кейсов", "task_name": "Запуск пула", "start_date": "2026-09-14", "end_date": "2026-09-14", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "", "team": "5", "comment": "Пул запущен."}, {"id": "t6", "project": "Шаги кейсов", "task_name": "Основная разметка (2 пула × 120 = 240 заданий)", "start_date": "2026-09-14", "end_date": "2026-09-18", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "240", "team": "5", "comment": "Основной объём с учётом перекрытия."}, {"id": "t7", "project": "Шаги кейсов", "task_name": "Проверка расхождений", "start_date": "2026-09-18", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Ревью шло параллельно с разметкой."}, {"id": "t8", "project": "Шаги кейсов", "task_name": "Закрытие основного пула", "start_date": "2026-09-18", "end_date": "2026-09-18", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "240", "done": "240", "team": "", "comment": "Основной пул закрыт."}, {"id": "t9", "project": "Шаги кейсов", "task_name": "Доработка после ревью", "start_date": "2026-09-18", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Только спорные случаи и доразметка."}, {"id": "t10", "project": "Шаги кейсов", "task_name": "Передача результата", "start_date": "2026-09-21", "end_date": "2026-09-21", "status": "Завершено", "progress": 100, "assignee": "Команда разметки", "priority": "Средний", "volume": "", "done": "", "team": "", "comment": "Финальная выгрузка после закрытия расхождений."}, {"id": "t11", "project": "Тесты", "task_name": "Подготовка и запуск", "start_date": "2026-09-25", "end_date": "2026-09-25", "status": "Не начат", "progress": 0, "assignee": "Команда разметки", "priority": "Средний", "volume": "190", "done": "0", "team": "", "comment": "5 пулов по 38 заданий."}, {"id": "prod_longreads_92", "project": "Прод · Лонгриды", "task_name": "Текущий пул — 92 лонгрида", "start_date": "2026-09-25", "end_date": "2026-09-30", "status": "В работе", "progress": 0, "assignee": "Команда разметки", "priority": "Высокий", "volume": "92", "done": "", "team": "", "comment": "Старт в пятницу, дедлайн в среду. Готово пока не указано — внесите фактическое число."}]</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase, ref, get, set, update, remove, onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {"apiKey": "AIzaSyAg0Vb1DgaLMPlUshVZIetzGQUwQTZjsfc", "authDomain": "gantt-control-center.firebaseapp.com", "projectId": "gantt-control-center", "storageBucket": "gantt-control-center.firebasestorage.app", "messagingSenderId": "871395411317", "appId": "1:871395411317:web:c7dac115b6b5fd05457f3c", "databaseURL": "https://gantt-control-center-default-rtdb.europe-west1.firebasedatabase.app"};
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+(() => {
+  const BOOTSTRAP_ADMIN = "admin@yandex-team.ru";
+  const SESSION_KEY = "aico-gantt-email";
+  const seed = JSON.parse(document.getElementById("seed-data").textContent);
+  let tasks = [];
+  let users = {};
+  let currentUser = null;
+  let unsubTasks = null;
+  let unsubUsers = null;
+  let showingTable = false;
+  let presentation = false;
+
+  const $ = id => document.getElementById(id);
+  const app = $("app");
+
+  function safeKey(email){
+    return String(email).trim().toLowerCase().replace(/[.#$[\]\/]/g,"_");
+  }
+  function roleLabel(role){
+    return role==="admin" ? "Админ" : role==="editor" ? "Редактор" : "Наблюдатель";
+  }
+  function canEdit(){ return currentUser && (currentUser.role==="admin" || currentUser.role==="editor"); }
+  function isAdmin(){ return currentUser && currentUser.role==="admin"; }
+
+  function parseDate(s){
+    const [y,m,d]=String(s).slice(0,10).split("-").map(Number);
+    return new Date(Date.UTC(y,m-1,d));
+  }
+  function iso(d){ return d.toISOString().slice(0,10); }
+  function addDays(d,n){ const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; }
+  function diff(a,b){ return Math.round((parseDate(b)-parseDate(a))/86400000); }
+  function todayUTC(){ const n=new Date(); return new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())); }
+  function overdue(t){ return t.status!=="Завершено" && parseDate(t.end_date) < todayUTC(); }
+  function statusClass(t){ if(overdue(t)) return "overdue"; if(t.status==="Завершено") return "done"; if(t.status==="В работе") return "work"; if(t.status==="Пауза") return "pause"; return "notstarted"; }
+  function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
+  function fmtDate(s){ return new Intl.DateTimeFormat("ru-RU",{day:"2-digit",month:"short"}).format(parseDate(s)); }
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+  async function bootstrapIfNeeded(){
+    const usersSnap = await get(ref(db,"users"));
+    if(!usersSnap.exists()){
+      await set(ref(db,"users/"+safeKey(BOOTSTRAP_ADMIN)),{
+        email:BOOTSTRAP_ADMIN,
+        name:"Admin",
+        role:"admin",
+        createdAt:Date.now()
+      });
+    }
+    const tasksSnap = await get(ref(db,"tasks"));
+    if(!tasksSnap.exists()){
+      const obj={};
+      seed.forEach(t=>obj[t.id]=t);
+      await set(ref(db,"tasks"),obj);
+    }
+  }
+
+  async function login(email){
+    email=String(email||"").trim().toLowerCase();
+    $("loginError").textContent="";
+    try{
+      // First-run bootstrap: only the predefined admin can initialize an empty DB.
+      const usersSnap = await get(ref(db,"users"));
+      if(!usersSnap.exists() && email===BOOTSTRAP_ADMIN) await bootstrapIfNeeded();
+
+      const snap = await get(ref(db,"users/"+safeKey(email)));
+      if(!snap.exists() || String(snap.val().email||"").toLowerCase()!==email){
+        $("loginError").textContent="Для этой почты нет доступа.";
+        return;
+      }
+      currentUser=snap.val();
+      localStorage.setItem(SESSION_KEY,email);
+      enterApp();
+    }catch(err){
+      $("loginError").textContent="Не удалось подключиться к базе. Проверьте Realtime Database Rules.";
+      console.error(err);
+    }
+  }
+
+  function enterApp(){
+    $("loginScreen").style.display="none";
+    app.hidden=false;
+    $("userBar").hidden=false;
+    $("currentEmail").textContent=currentUser.email;
+    $("currentRole").textContent=roleLabel(currentUser.role);
+    $("accessBtn").hidden=!isAdmin();
+    app.classList.toggle("viewer",!canEdit());
+    subscribeData();
+  }
+
+  function logout(){
+    if(unsubTasks) unsubTasks();
+    if(unsubUsers) unsubUsers();
+    localStorage.removeItem(SESSION_KEY);
+    currentUser=null;
+    tasks=[]; users={};
+    app.hidden=true;
+    app.classList.remove("viewer");
+    $("loginScreen").style.display="flex";
+    $("loginEmail").value="";
+    $("loginError").textContent="";
+  }
+
+  function subscribeData(){
+    if(unsubTasks) unsubTasks();
+    if(unsubUsers) unsubUsers();
+    unsubTasks=onValue(ref(db,"tasks"),snap=>{
+      const v=snap.val()||{};
+      tasks=Object.entries(v).map(([id,t])=>({...t,id:t.id||id}));
+      render();
+    });
+    unsubUsers=onValue(ref(db,"users"),snap=>{
+      users=snap.val()||{};
+      renderAccessList();
+      const me=users[safeKey(currentUser.email)];
+      if(!me){ logout(); return; }
+      currentUser=me;
+      $("currentRole").textContent=roleLabel(currentUser.role);
+      $("accessBtn").hidden=!isAdmin();
+      app.classList.toggle("viewer",!canEdit());
+    });
+    onValue(ref(db,".info/connected"),snap=>{
+      const online=!!snap.val();
+      $("liveDot").classList.toggle("on",online);
+      $("liveText").textContent=online?"Firebase live":"офлайн";
+    });
+  }
+
+  function filtered(){
+    const q=$("search").value.trim().toLowerCase(), p=$("projectFilter").value, st=$("statusFilter").value;
+    return tasks.filter(t=>(!q || (t.task_name+" "+t.project+" "+(t.comment||"")).toLowerCase().includes(q)) && (!p||t.project===p) && (!st||t.status===st))
+      .sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.project.localeCompare(b.project));
+  }
+
+  function range(list){
+    const arr=list.length?list:tasks;
+    let min=arr.length?arr.reduce((a,t)=>a<t.start_date?a:t.start_date,arr[0].start_date):iso(todayUTC());
+    let max=arr.length?arr.reduce((a,t)=>a>t.end_date?a:t.end_date,arr[0].end_date):iso(addDays(todayUTC(),7));
+    let a=addDays(parseDate(min),-5), b=addDays(parseDate(max),10);
+    const td=todayUTC();
+    if(td<a) a=addDays(td,-4);
+    if(td>b) b=addDays(td,7);
+    return [a,b];
+  }
+
+  function refreshProjects(){
+    const cur=$("projectFilter").value;
+    const projects=[...new Set(tasks.map(t=>t.project))].sort();
+    $("projectFilter").innerHTML='<option value="">Все проекты</option>'+projects.map(p=>`<option${p===cur?' selected':''}>${esc(p)}</option>`).join("");
+  }
+
+  function render(){
+    refreshProjects();
+    const list=filtered(), [start,end]=range(list);
+    const dayW=Number($("zoom").value||16);
+    document.documentElement.style.setProperty("--dayw",dayW+"px");
+    const totalDays=diff(iso(start),iso(end))+1;
+    $("gantt").style.width=(330+totalDays*dayW)+"px";
+
+    const months=$("months"), days=$("days");
+    months.innerHTML=""; days.innerHTML="";
+    let monthStart=0, prevMonth=-1;
+    for(let i=0;i<totalDays;i++){
+      const d=addDays(start,i), m=d.getUTCMonth();
+      if(m!==prevMonth){
+        if(prevMonth!==-1) months.lastElementChild.style.width=((i-monthStart)*dayW)+"px";
+        const ml=document.createElement("div");
+        ml.className="month-label"; ml.style.left=(i*dayW+7)+"px";
+        ml.textContent=new Intl.DateTimeFormat("ru-RU",{month:"long",year:"numeric"}).format(d);
+        months.appendChild(ml); monthStart=i; prevMonth=m;
+      }
+    }
+    if(months.lastElementChild) months.lastElementChild.style.width=((totalDays-monthStart)*dayW)+"px";
+
+    if(dayW<=16){
+      let i=0;
+      while(i<totalDays){
+        const d=addDays(start,i), dow=d.getUTCDay(), shift=(dow===0?6:dow-1);
+        const weekStart=addDays(d,-shift), weekEnd=addDays(weekStart,6);
+        const visibleStart=i===0?d:weekStart;
+        let span=Math.min(7-(i===0?shift:0),totalDays-i);
+        const lab=document.createElement("div");
+        const td=todayUTC();
+        lab.className="week-label"+(td>=weekStart&&td<=weekEnd?" current":"");
+        lab.style.left=(i*dayW)+"px"; lab.style.width=(span*dayW)+"px";
+        const fmt=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"short"});
+        lab.textContent=fmt.format(visibleStart)+"–"+fmt.format(addDays(visibleStart,span-1));
+        days.appendChild(lab); i+=span;
+      }
+    }else{
+      for(let i=0;i<totalDays;i++){
+        const d=addDays(start,i), dow=d.getUTCDay();
+        const lab=document.createElement("div");
+        lab.className="day-label"+((dow===0||dow===6)?" weekend":"");
+        lab.style.left=(i*dayW)+"px"; lab.style.width=dayW+"px"; lab.textContent=d.getUTCDate();
+        days.appendChild(lab);
+      }
+    }
+
+    const grouped={};
+    list.forEach(t=>(grouped[t.project]??=[]).push(t));
+    let out="";
+    const tpos=diff(iso(start),iso(todayUTC()))*dayW+dayW/2;
+    for(const [project,items] of Object.entries(grouped)){
+      out+=`<div class="grouprow"><div class="groupname">${esc(project)}</div><div class="grouptrack"></div></div>`;
+      for(const t of items){
+        const left=diff(iso(start),t.start_date)*dayW;
+        const daysLen=diff(t.start_date,t.end_date)+1;
+        const width=Math.max(8,daysLen*dayW-4), cls=statusClass(t), milestone=daysLen===1?" milestone":"";
+        const pct=Math.max(0,Math.min(100,Number(t.progress)||0));
+        let weekendBands="",monthSeps="";
+        for(let i=0;i<totalDays;i++){
+          const d=addDays(start,i),dow=d.getUTCDay();
+          if(dow===0||dow===6) weekendBands+=`<i class="weekend-band" style="left:${i*dayW}px;width:${dayW}px"></i>`;
+          if(d.getUTCDate()===1) monthSeps+=`<i class="month-sep" style="left:${i*dayW}px"></i>`;
+        }
+        out+=`<div class="taskrow${dayW<=16?' compact':''}" data-id="${esc(t.id)}">
+          <div class="taskmeta">
+            <button class="task-open" title="${canEdit()?'Открыть задачу':'Просмотр'}">
+              <div class="tasktitle">${esc(t.task_name)}</div>
+              <div class="tasksub">
+                <span>${fmtDate(t.start_date)} → ${fmtDate(t.end_date)}</span>
+                <span class="badge"><i class="statusdot" style="background:${cls==='done'?'#72e0a6':cls==='work'?'#72a7ff':cls==='overdue'?'#ff6b7a':'#ffc768'}"></i>${overdue(t)?'Просрочено':esc(t.status)}</span>
+                ${t.volume?`<span>${esc(t.done||0)} / ${esc(t.volume)}</span>`:""}
+                ${t.assignee?`<span class="owner">${esc(t.assignee)}</span>`:""}
+                ${t.priority?`<span class="priority">${esc(t.priority)}</span>`:""}
+              </div>
+            </button>
+            ${canEdit()?'<button class="btn edit-only task-edit" style="padding:6px 9px">•••</button>':""}
+          </div>
+          <div class="track${dayW<=16?' compact':''}">${weekendBands}${monthSeps}
+            ${tpos>=0&&tpos<=totalDays*dayW?`<i class="todayline" style="left:${tpos}px"></i>`:""}
+            <div class="bar ${cls}${milestone}" style="left:${left+2}px;width:${width}px" title="${esc(t.task_name)}">
+              <div class="prog" style="width:${pct}%"></div><span>${pct?`${pct}% · `:""}${esc(t.task_name)}</span>
+            </div>
+          </div>
+        </div>`;
+      }
+    }
+    $("rows").innerHTML=out||'<div style="padding:30px;color:var(--muted)">По фильтрам ничего не найдено.</div>';
+    updateStats(); renderTable(list); bindRows();
+  }
+
+  function updateStats(){
+    const all=tasks.length, done=tasks.filter(t=>t.status==="Завершено").length, work=tasks.filter(t=>t.status==="В работе").length, risk=tasks.filter(overdue).length;
+    const volume=tasks.reduce((s,t)=>s+(Number(String(t.volume||"").replace(",","."))||0),0);
+    $("statAll").textContent=all; $("statDone").textContent=done; $("statWork").textContent=work; $("statRisk").textContent=risk; $("statVolume").textContent=volume||"—";
+    const risks=tasks.filter(overdue);
+    $("riskNotice").classList.toggle("show",risk>0);
+    $("riskNotice").innerHTML=risk?`⚠️ <strong>${risk} просроченн${risk===1?'ая задача':'ых задач'}:</strong> ${risks.map(t=>esc(t.project+" · "+t.task_name)).join(" · ")}`:"";
+  }
+
+  function renderTable(list){
+    $("tableWrap").innerHTML=`<table><thead><tr><th>Проект</th><th>Задача</th><th>Старт</th><th>Финиш</th><th>Статус</th><th>Прогресс</th><th>Объём</th><th>Готово</th><th>Команда</th><th>Комментарий</th></tr></thead><tbody>${
+      list.map(t=>`<tr><td>${esc(t.project)}</td><td>${esc(t.task_name)}</td><td>${esc(t.start_date)}</td><td>${esc(t.end_date)}</td><td>${overdue(t)?'Просрочено':esc(t.status)}</td><td>${esc(t.progress)}%</td><td>${esc(t.volume)}</td><td>${esc(t.done)}</td><td>${esc(t.team)}</td><td>${esc(t.comment)}</td></tr>`).join("")
+    }</tbody></table>`;
+  }
+
+  function bindRows(){
+    if(!canEdit()) return;
+    document.querySelectorAll(".task-open,.task-edit,.bar").forEach(el=>el.addEventListener("click",e=>{
+      const row=e.target.closest(".taskrow"); if(row&&!presentation) openTask(row.dataset.id);
+    }));
+  }
+
+  function openTask(id){
+    if(!canEdit()) return;
+    const t=tasks.find(x=>x.id===id);
+    $("modalTitle").textContent=t?"Редактировать задачу":"Новая задача";
+    $("fId").value=t?.id||"";
+    $("fProject").value=t?.project||"";
+    $("fName").value=t?.task_name||"";
+    $("fStart").value=t?.start_date||iso(todayUTC());
+    $("fEnd").value=t?.end_date||iso(todayUTC());
+    $("fStatus").value=t?.status||"Не начат";
+    $("fProgress").value=t?.progress??0;
+    $("fPriority").value=t?.priority||"Средний";
+    $("fVolume").value=t?.volume||"";
+    $("fDone").value=t?.done||"";
+    $("fTeam").value=t?.team||"";
+    $("fAssignee").value=t?.assignee||"Команда разметки";
+    $("fComment").value=t?.comment||"";
+    $("deleteBtn").style.visibility=t?"visible":"hidden";
+    $("modalBack").classList.add("open");
+  }
+  function closeModal(){ $("modalBack").classList.remove("open"); }
+
+  $("taskForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!canEdit()) return;
+    const start=$("fStart").value,end=$("fEnd").value;
+    if(!start||!end||parseDate(end)<parseDate(start)){ alert("Финиш не может быть раньше старта."); return; }
+    const status=$("fStatus").value;
+    let progress=Math.max(0,Math.min(100,Number($("fProgress").value)||0));
+    const volumeNum=Number(String($("fVolume").value).replace(",","."));
+    const doneNum=Number(String($("fDone").value).replace(",","."));
+    if(volumeNum>0&&Number.isFinite(doneNum)&&$("fDone").value.trim()!=="") progress=Math.max(0,Math.min(100,Math.round(doneNum/volumeNum*100)));
+    if(status==="Завершено") progress=100;
+    const id=$("fId").value||("t"+Date.now());
+    const item={
+      id,project:$("fProject").value.trim(),task_name:$("fName").value.trim(),start_date:start,end_date:end,status,progress,
+      priority:$("fPriority").value,volume:$("fVolume").value.trim(),done:$("fDone").value.trim(),team:$("fTeam").value.trim(),
+      assignee:$("fAssignee").value.trim(),comment:$("fComment").value.trim(),updatedBy:currentUser.email,updatedAt:Date.now()
+    };
+    await set(ref(db,"tasks/"+id),item);
+    closeModal(); toast("Сохранено в Firebase");
+  });
+
+  $("deleteBtn").addEventListener("click",async()=>{
+    if(!canEdit()) return;
+    const id=$("fId").value;
+    if(id&&confirm("Удалить задачу?")){ await remove(ref(db,"tasks/"+id)); closeModal(); toast("Удалено"); }
+  });
+  $("cancelBtn").addEventListener("click",closeModal);
+  $("modalBack").addEventListener("click",e=>{if(e.target===$("modalBack"))closeModal()});
+  $("addBtn").addEventListener("click",()=>openTask(null));
+
+  ["search","projectFilter","statusFilter","zoom"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+  $("todayBtn").addEventListener("click",()=>{
+    const list=filtered(),[start]=range(list),dayW=Number($("zoom").value||16);
+    const x=diff(iso(start),iso(todayUTC()))*dayW-Math.max(180,$("scroll").clientWidth*.42);
+    $("scroll").scrollTo({left:Math.max(0,x),behavior:"smooth"});
+  });
+  $("tableBtn").addEventListener("click",()=>{
+    showingTable=!showingTable; $("tableWrap").classList.toggle("show",showingTable); $("scroll").style.display=showingTable?"none":"block";
+    $("tableBtn").textContent=showingTable?"Гант":"Таблица";
+  });
+  $("presentBtn").addEventListener("click",()=>{
+    presentation=!presentation; app.classList.toggle("present",presentation);
+    $("presentBtn").textContent=presentation?"Выйти из презентации":"Презентационный режим";
+  });
+
+  function renderAccessList(){
+    if(!isAdmin() || !$("accessList")) return;
+    const entries=Object.entries(users).sort((a,b)=>(a[1].email||"").localeCompare(b[1].email||""));
+    $("accessList").innerHTML=entries.map(([key,u])=>`
+      <div class="access-row" data-key="${esc(key)}">
+        <div><div class="access-mail">${esc(u.email)}</div><div class="access-name">${esc(u.name||"Без имени")}</div></div>
+        <select class="field user-role" ${String(u.email).toLowerCase()===BOOTSTRAP_ADMIN?"disabled":""}>
+          <option value="viewer"${u.role==="viewer"?" selected":""}>Наблюдатель</option>
+          <option value="editor"${u.role==="editor"?" selected":""}>Редактор</option>
+          <option value="admin"${u.role==="admin"?" selected":""}>Администратор</option>
+        </select>
+        <button class="btn danger user-remove" ${String(u.email).toLowerCase()===BOOTSTRAP_ADMIN?"disabled":""}>Удалить</button>
+      </div>
+    `).join("");
+    document.querySelectorAll(".user-role").forEach(sel=>sel.addEventListener("change",async e=>{
+      const row=e.target.closest(".access-row"),key=row.dataset.key;
+      await update(ref(db,"users/"+key),{role:e.target.value,updatedAt:Date.now(),updatedBy:currentUser.email});
+      toast("Роль обновлена");
+    }));
+    document.querySelectorAll(".user-remove").forEach(btn=>btn.addEventListener("click",async e=>{
+      const row=e.target.closest(".access-row"),key=row.dataset.key,u=users[key];
+      if(u && confirm(`Убрать доступ для ${u.email}?`)){ await remove(ref(db,"users/"+key)); toast("Доступ удалён"); }
+    }));
+  }
+
+  $("accessBtn").addEventListener("click",()=>{ if(isAdmin()){renderAccessList();$("accessModalBack").classList.add("open");} });
+  $("closeAccessBtn").addEventListener("click",()=>$("accessModalBack").classList.remove("open"));
+  $("accessModalBack").addEventListener("click",e=>{if(e.target===$("accessModalBack"))$("accessModalBack").classList.remove("open")});
+  $("addUserBtn").addEventListener("click",async()=>{
+    if(!isAdmin()) return;
+    const email=$("newUserEmail").value.trim().toLowerCase();
+    const name=$("newUserName").value.trim();
+    const role=$("newUserRole").value;
+    if(!email || !email.includes("@")){ alert("Введите корректную почту."); return; }
+    await set(ref(db,"users/"+safeKey(email)),{email,name,role,createdAt:Date.now(),createdBy:currentUser.email});
+    $("newUserEmail").value=""; $("newUserName").value=""; $("newUserRole").value="viewer";
+    toast("Доступ добавлен");
+  });
+
+  $("logoutBtn").addEventListener("click",logout);
+  $("loginForm").addEventListener("submit",e=>{ e.preventDefault(); login($("loginEmail").value); });
+
+  // Remove local-only controls that no longer make sense in the shared Firebase version.
+  ["importBtn","exportBtn","backupBtn","resetBtn","fileInput"].forEach(id=>{ const el=$(id); if(el) el.remove(); });
+
+  const remembered=localStorage.getItem(SESSION_KEY);
+  if(remembered){
+    $("loginEmail").value=remembered;
+    login(remembered);
+  }
+})();
+</script>
+
+</body>
+</html>
